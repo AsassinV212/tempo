@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
+<meta name="theme-color" content="#10131a">
+<style>html{-webkit-text-size-adjust:100%;touch-action:manipulation;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
 <title>Темп чтения</title>
 <style>
 /* Layout: one reading column under a slim header. The stage and the Schulte grid are the loudest things on screen; everything else stays quiet.
@@ -186,8 +187,29 @@ textarea{width:100%;margin-top:10px;background:var(--surface);color:var(--fg);bo
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--raised);border:1px solid var(--line);border-radius:8px;padding:10px 16px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw}
 .toast.on{opacity:1}
 
+*{-webkit-tap-highlight-color:transparent}
+.btn,.seg button,nav button,.qopt,.task,.check-l{min-height:44px}
+.cell{-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.stage{cursor:pointer}
+#stPage .stage-foot{position:sticky;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));margin-top:16px}
 @media (max-width:700px){
   .grid-home,.sc-wrap{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:520px){
+  h1{margin:20px 0 6px;font-size:26px}
+  .lead{font-size:15px;margin-bottom:16px}
+  .lead.hide-sm{display:none}
+  #v-schulte h1{display:none}
+  #v-schulte .controls{margin-top:16px}
+  .btn{padding:12px 18px}
+  .actions .btn,.stage-foot .btn{flex:1 1 auto}
+  .seg{width:100%}
+  .seg button{flex:1 1 0;padding:9px 6px}
+  .controls{gap:10px}
+  .panel{padding:14px}
+  .sc-head b{font-size:24px}
+  .big small{display:block;margin:6px 0 0}
+  .rows .r{grid-template-columns:3.6em minmax(0,1fr) auto}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -224,7 +246,7 @@ textarea{width:100%;margin-top:10px;background:var(--surface);color:var(--fg);bo
     <!-- SCHULTE -->
     <section id="v-schulte" hidden>
       <h1>Таблица Шульте</h1>
-      <p class="lead">Смотрите в отмеченный центр и находите числа по порядку, не водя взглядом по клеткам. Время идёт с нажатия на «Старт».</p>
+      <p class="lead hide-sm">Смотрите в отмеченный центр и находите числа по порядку, не водя взглядом по клеткам. Время идёт с нажатия на «Старт».</p>
       <div class="controls">
         <div class="seg" id="scSize" role="group" aria-label="Размер"></div>
         <div class="seg" id="scKind" role="group" aria-label="Порядок"></div>
@@ -233,8 +255,8 @@ textarea{width:100%;margin-top:10px;background:var(--surface);color:var(--fg);bo
       <div class="sc-wrap">
         <div>
           <div class="sc-head"><span>Найти<b id="scTarget">—</b></span><span class="time" id="scTime">0,00</span><span>Ошибок: <span id="scErr">0</span></span></div>
+          <div class="actions" style="margin:0 0 12px"><button type="button" class="btn" id="scStart">Старт</button></div>
           <div class="grid-wrap" id="scWrap"><div class="scgrid" id="scGrid"></div><i class="fixdot" id="scDot"></i></div>
-          <div class="actions"><button type="button" class="btn" id="scStart">Старт</button></div>
         </div>
         <aside class="panel" id="scSide"></aside>
       </div>
@@ -279,7 +301,7 @@ textarea{width:100%;margin-top:10px;background:var(--surface);color:var(--fg);bo
           <div class="stage"><i class="guide top"></i><div class="word" id="word"></div><i class="guide bot"></i></div>
           <div class="bar"><i id="bar"></i></div>
           <div class="stage-foot"><span class="hint" id="stInfo"></span><span class="grow"></span><button type="button" class="btn ghost" id="btnPause">Пауза</button><button type="button" class="btn ghost" id="btnAbort">Прервать</button></div>
-          <p class="hint">Пробел ставит на паузу, Esc прерывает. Смотрите на подсвеченную букву и не двигайте глаза.</p>
+          <p class="hint">Нажатие на экран или пробел ставит на паузу, Esc прерывает. Смотрите на подсвеченную букву и не двигайте глаза.</p>
         </div>
         <div id="stPage" hidden>
           <article class="article" id="article"></article>
@@ -422,7 +444,7 @@ function seg(el,opts,val,cb){
 
 /* ---------- chart ---------- */
 function chartHTML(d,start){
-  var W=560,H=250,L=40,RR=58,T=14,B=26;
+  var W=Math.max(300,Math.min(560,document.documentElement.clientWidth-64)),H=250,L=40,RR=58,T=14,B=26;
   var mx=Math.max.apply(null,d.map(function(x){return x.wpm}).concat([100]));
   var top=Math.ceil(mx/100)*100,step=top>600?200:100;
   var X=function(i){return L+(d.length===1?(W-L-RR)/2:i*(W-L-RR)/(d.length-1))};
@@ -726,7 +748,8 @@ function togglePause(){
   else{R.paused=false;R.i=Math.max(0,R.i-1);$('#btnPause').textContent='Пауза';tick()}
 }
 function abortRead(){stopAll();R.run=null;step('setup')}
-$('#btnPause').addEventListener('click',togglePause);
+$('#btnPause').addEventListener('click',function(e){e.stopPropagation();togglePause()});
+$('.stage').addEventListener('click',togglePause);
 $('#btnAbort').addEventListener('click',abortRead);
 $('#btnAbort2').addEventListener('click',abortRead);
 document.addEventListener('keydown',function(e){
@@ -856,6 +879,8 @@ $('#btnReset').addEventListener('click',function(){
 });
 
 /* ---------- boot ---------- */
+var rsT=0;
+window.addEventListener('resize',function(){clearTimeout(rsT);rsT=setTimeout(function(){if(!$('#v-home').hidden)renderHome();else if(!$('#v-stats').hidden)renderStats()},150)});
 show(location.hash.slice(1));
 })();
 </script>
